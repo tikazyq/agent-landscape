@@ -101,7 +101,7 @@ export default function App() {
           gap:mobile?8:12, marginBottom:mobile?8:12, flexWrap:"wrap",
         }}>
           <LangToggle lang={lang} setLang={setLang}/>
-          <ShareButton lang={lang} mobile={mobile}/>
+          <ShareButton lang={lang} mobile={mobile} title={t(titles[tab],lang)} subtitle={t(subtitles[tab],lang)}/>
           <div style={{
             display:"inline-flex",background:C.surface,
             border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",
