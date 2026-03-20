@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C, mono, sans, useWidth, LangToggle, t } from "./shared";
+import { C, mono, sans, useWidth, LangToggle, ShareButton, t } from "./shared";
 import Landscape from "./views/Landscape";
 import Progression from "./views/Progression";
 import Examples from "./views/Examples";
@@ -101,6 +101,7 @@ export default function App() {
           gap:mobile?8:12, marginBottom:mobile?8:12, flexWrap:"wrap",
         }}>
           <LangToggle lang={lang} setLang={setLang}/>
+          <ShareButton lang={lang} mobile={mobile}/>
           <div style={{
             display:"inline-flex",background:C.surface,
             border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",
