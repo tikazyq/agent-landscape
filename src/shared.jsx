@@ -45,6 +45,41 @@ export function LangToggle({ lang, setLang }) {
   );
 }
 
+export function ShareButton({ lang, mobile }) {
+  const [copied, setCopied] = useState(false);
+  const label = { en: "Share", zh: "分享" };
+  const copiedLabel = { en: "Copied!", zh: "已复制!" };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = document.title || "AI Agent Landscape";
+    if (navigator.share) {
+      try { await navigator.share({ title, url }); } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {}
+    }
+  };
+
+  return (
+    <button onClick={handleShare} style={{
+      display:"inline-flex", alignItems:"center", gap:5,
+      background: copied ? C.green+"22" : C.surface,
+      color: copied ? C.green : C.textDim,
+      border:`1px solid ${copied ? C.green+"55" : C.border}`,
+      borderRadius:20, padding: mobile ? "5px 12px" : "6px 14px",
+      cursor:"pointer", fontFamily:mono, fontSize: mobile ? 10 : 11,
+      fontWeight:500, transition:"all 0.15s ease",
+    }}>
+      <span style={{fontSize: mobile ? 11 : 13}}>{copied ? "✓" : "↗"}</span>
+      {t(copied ? copiedLabel : label, lang)}
+    </button>
+  );
+}
+
 export function Tag({ children, color, mobile }) {
   return (
     <span style={{
