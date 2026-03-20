@@ -48,23 +48,110 @@ export function LangToggle({ lang, setLang }) {
 }
 
 export function ShareButton({ lang, mobile, title, subtitle }) {
+  const [showMenu, setShowMenu] = useState(false);
   const [showPoster, setShowPoster] = useState(false);
-  const label = { en: "Share", zh: "分享" };
+  const [copied, setCopied] = useState(false);
+  const menuRef = useRef(null);
+  const btnRef = useRef(null);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target) &&
+          btnRef.current && !btnRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
+  }, [showMenu]);
+
+  const url = typeof window !== "undefined" ? window.location.href : "";
+  const hasNativeShare = typeof navigator !== "undefined" && !!navigator.share;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => { setCopied(false); setShowMenu(false); }, 1500);
+    } catch {}
+  };
+
+  const handleNativeShare = async () => {
+    try { await navigator.share({ title: title || "AI Agent Landscape", url }); } catch {}
+    setShowMenu(false);
+  };
+
+  const handlePoster = () => {
+    setShowMenu(false);
+    setShowPoster(true);
+  };
+
+  const handleTwitter = () => {
+    const text = encodeURIComponent(title || "AI Agent Landscape");
+    window.open(`https://x.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, "_blank");
+    setShowMenu(false);
+  };
+
+  const menuBtnStyle = {
+    display:"flex", alignItems:"center", gap:10, width:"100%",
+    background:"transparent", border:"none", padding:"9px 8px",
+    cursor:"pointer", color:C.text, fontFamily:mono, fontSize:12,
+    borderRadius:8, transition:"background 0.15s ease",
+    textAlign:"left",
+  };
+
+  const menuItems = [
+    { icon:"🖼️", label:{ en:"Share as Image", zh:"生成分享图片" }, desc:{ en:"Poster with QR code", zh:"含二维码的海报" }, action:handlePoster },
+    { icon:"📋", label:{ en: copied ? "Copied!" : "Copy Link", zh: copied ? "已复制!" : "复制链接" }, desc:{ en:"Paste anywhere", zh:"粘贴到任意位置" }, action:handleCopy, highlight: copied },
+    ...(hasNativeShare ? [{ icon:"📤", label:{ en:"Share via…", zh:"分享到…" }, desc:{ en:"System share sheet", zh:"系统分享面板" }, action:handleNativeShare }] : []),
+    { icon:"𝕏", label:{ en:"Share on X", zh:"分享到 X (Twitter)" }, desc:{ en:"Post with link", zh:"发布推文" }, action:handleTwitter },
+  ];
 
   return (
     <>
-      <button onClick={() => setShowPoster(true)} style={{
-        display:"inline-flex", alignItems:"center", gap:5,
-        background: C.surface,
-        color: C.textDim,
-        border:`1px solid ${C.border}`,
-        borderRadius:20, padding: mobile ? "5px 12px" : "6px 14px",
-        cursor:"pointer", fontFamily:mono, fontSize: mobile ? 10 : 11,
-        fontWeight:500, transition:"all 0.15s ease",
-      }}>
-        <span style={{fontSize: mobile ? 11 : 13}}>↗</span>
-        {t(label, lang)}
-      </button>
+      <div style={{ position:"relative", display:"inline-block" }}>
+        <button ref={btnRef} onClick={() => setShowMenu(v => !v)} style={{
+          display:"inline-flex", alignItems:"center", gap:5,
+          background: C.surface,
+          color: C.textDim,
+          border:`1px solid ${C.border}`,
+          borderRadius:20, padding: mobile ? "5px 12px" : "6px 14px",
+          cursor:"pointer", fontFamily:mono, fontSize: mobile ? 10 : 11,
+          fontWeight:500, transition:"all 0.15s ease",
+        }}>
+          <span style={{fontSize: mobile ? 11 : 13}}>↗</span>
+          {t({ en: "Share", zh: "分享" }, lang)}
+        </button>
+
+        {showMenu && (
+          <div ref={menuRef} style={{
+            position:"absolute", top:"calc(100% + 8px)", right:0, zIndex:1000,
+            background:C.surface, border:`1px solid ${C.border}`, borderRadius:12,
+            padding:6, minWidth:220, boxShadow:"0 8px 32px rgba(0,0,0,0.5)",
+          }}>
+            {menuItems.map((item, i) => (
+              <button key={i} onClick={item.action} style={{
+                ...menuBtnStyle,
+                color: item.highlight ? C.green : C.text,
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <span style={{ fontSize:18, width:28, textAlign:"center", flexShrink:0 }}>{item.icon}</span>
+                <div>
+                  <div style={{ fontWeight:600, fontSize:12 }}>{t(item.label, lang)}</div>
+                  <div style={{ fontSize:10, color:C.textDim, marginTop:1 }}>{t(item.desc, lang)}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       {showPoster && (
         <Suspense fallback={null}>
           <SharePoster
