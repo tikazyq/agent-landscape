@@ -8,6 +8,7 @@ import ToolEcosystem from "./views/ToolEcosystem";
 import Insights from "./views/Insights";
 import Inversion from "./views/Inversion";
 import Guide from "./views/Guide";
+import Predictions from "./views/Predictions";
 
 const modes = [
   { id:"what", label:{en:"📊 WHAT",zh:"📊 现状"}, color:C.blue },
@@ -23,9 +24,10 @@ const whatTabs = [
 ];
 
 const whyTabs = [
-  { id:"insights",  label:{en:"Insights",zh:"观点"},    icon:"🔮" },
-  { id:"inversion", label:{en:"Inversion",zh:"反转"},   icon:"⚖️" },
-  { id:"guide",     label:{en:"Guide",zh:"指南"},       icon:"🧭" },
+  { id:"insights",    label:{en:"Insights",zh:"观点"},      icon:"🔮" },
+  { id:"inversion",   label:{en:"Inversion",zh:"反转"},     icon:"⚖️" },
+  { id:"guide",       label:{en:"Guide",zh:"指南"},         icon:"🧭" },
+  { id:"predictions", label:{en:"Predictions",zh:"预测"},   icon:"🔭" },
 ];
 
 const titles = {
@@ -37,6 +39,7 @@ const titles = {
   insights:   {en:"Key Insights",zh:"核心观点"},
   inversion:  {en:"The Great Inversion",zh:"大反转"},
   guide:      {en:"Which Setup Should I Use?",zh:"我该用什么配置？"},
+  predictions:{en:"Predictions",zh:"预测"},
 };
 
 const subtitles = {
@@ -48,6 +51,7 @@ const subtitles = {
   insights:   {en:"Sharp observations from the AI agent landscape — tap to expand",zh:"关于 AI Agent 生态的尖锐观察 — 点击展开"},
   inversion:  {en:"Less time, more leverage — the automation paradox",zh:"时间更短，杠杆更大 — 自动化悖论"},
   guide:      {en:"Answer 3 questions, get a personalized setup recommendation",zh:"回答 3 个问题，获取个性化配置推荐"},
+  predictions:{en:"Technology · Career · Organization · Product · Society — 2026-2028+",zh:"技术 · 职业 · 组织 · 产品 · 社会 — 2026-2028+"},
 };
 
 const footer = {
@@ -64,6 +68,7 @@ const viewMap = {
   insights:   Insights,
   inversion:  Inversion,
   guide:      Guide,
+  predictions:Predictions,
 };
 
 export default function App() {
