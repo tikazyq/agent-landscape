@@ -3,23 +3,31 @@ import { C, mono, sans, useWidth, LangToggle, t } from "./shared";
 import Landscape from "./views/Landscape";
 import Progression from "./views/Progression";
 import Examples from "./views/Examples";
+import DayInLife from "./views/DayInLife";
+import ToolEcosystem from "./views/ToolEcosystem";
 
 const tabs = [
   { id:"landscape", label:{en:"Landscape",zh:"交互全景"}, icon:"🗺️" },
   { id:"progression", label:{en:"Progression",zh:"自动化递进"}, icon:"📈" },
   { id:"examples", label:{en:"Examples",zh:"实战示例"}, icon:"🎯" },
+  { id:"dayinlife", label:{en:"Day in Life",zh:"开发者日常"}, icon:"🌅" },
+  { id:"tools", label:{en:"Tools",zh:"工具生态"}, icon:"🧰" },
 ];
 
 const titles = {
   landscape:{en:"AI Agent Interaction Landscape",zh:"AI Agent 交互全景"},
   progression:{en:"AI Automation Progression",zh:"AI 自动化递进"},
   examples:{en:"Workflow Examples by Stage",zh:"各阶段实战工作流"},
+  dayinlife:{en:"A Developer's Day",zh:"开发者的一天"},
+  tools:{en:"Tool & Protocol Ecosystem",zh:"工具 & 协议生态"},
 };
 
 const subtitles = {
   landscape:{en:"Protocol Stack · Multi-Platform · Agent Systems — tap cards to expand",zh:"协议栈 · 多端交互 · Agent 系统全景 — 点击卡片展开"},
   progression:{en:"Six stages from manual to autonomous orchestration — tap to expand",zh:"从人工到自主编排的六个阶段 — 点击展开详情"},
   examples:{en:"Same bug, six automation levels — see how the workflow transforms",zh:"同一个 Bug，六种自动化级别 — 看工作流如何演变"},
+  dayinlife:{en:"One developer, one day, four devices, four automation levels",zh:"一个开发者，一天，四种设备，四种自动化级别"},
+  tools:{en:"Tools and products mapped to protocols and automation levels",zh:"工具与产品按协议和自动化级别分类"},
 };
 
 const footer = {
@@ -68,6 +76,8 @@ export default function App(){
       {tab==="landscape"&&<Landscape lang={lang}/>}
       {tab==="progression"&&<Progression lang={lang}/>}
       {tab==="examples"&&<Examples lang={lang}/>}
+      {tab==="dayinlife"&&<DayInLife lang={lang}/>}
+      {tab==="tools"&&<ToolEcosystem lang={lang}/>}
 
       <div style={{maxWidth:940,margin:mobile?"12px auto 0":"20px auto 0",textAlign:"center"}}>
         <p style={{color:C.textDim,fontSize:mobile?7:9,fontFamily:mono}}>{t(footer,lang)}</p>
