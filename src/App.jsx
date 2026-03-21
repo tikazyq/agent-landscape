@@ -9,6 +9,9 @@ import Insights from "./views/Insights";
 import Inversion from "./views/Inversion";
 import Guide from "./views/Guide";
 import Predictions from "./views/Predictions";
+import Security from "./views/Security";
+import Assessment from "./views/Assessment";
+import Tracker from "./views/Tracker";
 
 const modes = [
   { id:"what", label:{en:"📊 WHAT",zh:"📊 现状"}, color:C.blue },
@@ -21,6 +24,7 @@ const whatTabs = [
   { id:"examples",   label:{en:"Examples",zh:"示例"},      icon:"🎯" },
   { id:"dayinlife",  label:{en:"Day in Life",zh:"日常"},   icon:"🌅" },
   { id:"tools",      label:{en:"Tools",zh:"工具"},         icon:"🧰" },
+  { id:"assessment", label:{en:"Assessment",zh:"自评"},     icon:"📋" },
 ];
 
 const whyTabs = [
@@ -28,6 +32,8 @@ const whyTabs = [
   { id:"inversion",   label:{en:"Inversion",zh:"反转"},     icon:"⚖️" },
   { id:"guide",       label:{en:"Guide",zh:"指南"},         icon:"🧭" },
   { id:"predictions", label:{en:"Predictions",zh:"预测"},   icon:"🔭" },
+  { id:"security",    label:{en:"Security",zh:"安全"},       icon:"🔒" },
+  { id:"tracker",     label:{en:"Tracker",zh:"追踪"},       icon:"📡" },
 ];
 
 const titles = {
@@ -40,6 +46,9 @@ const titles = {
   inversion:  {en:"The Great Inversion",zh:"大反转"},
   guide:      {en:"Which Setup Should I Use?",zh:"我该用什么配置？"},
   predictions:{en:"Predictions",zh:"预测"},
+  security:   {en:"Security & Governance",zh:"安全与治理"},
+  assessment: {en:"L0→L5 Self-Assessment",zh:"L0→L5 自评测试"},
+  tracker:    {en:"Prediction Tracker",zh:"预测追踪"},
 };
 
 const subtitles = {
@@ -52,6 +61,9 @@ const subtitles = {
   inversion:  {en:"Less time, more leverage — the automation paradox",zh:"时间更短，杠杆更大 — 自动化悖论"},
   guide:      {en:"Answer 3 questions, get a personalized setup recommendation",zh:"回答 3 个问题，获取个性化配置推荐"},
   predictions:{en:"Technology · Career · Organization · Product · Society — 2026-2028+",zh:"技术 · 职业 · 组织 · 产品 · 社会 — 2026-2028+"},
+  security:   {en:"Threat vectors, trust chains, and defense patterns for autonomous agents",zh:"自主 Agent 的威胁向量、信任链和防御模式 — 点击展开"},
+  assessment: {en:"Answer 8 questions to find your automation level — share your result",zh:"回答 8 个问题，找到你的自动化级别 — 分享你的结果"},
+  tracker:    {en:"12 predictions tracked with evidence, events, and updated confidence",zh:"12 项预测追踪：证据、事件与更新后的确信度"},
 };
 
 const footer = {
@@ -69,6 +81,9 @@ const viewMap = {
   inversion:  Inversion,
   guide:      Guide,
   predictions:Predictions,
+  security:   Security,
+  assessment: Assessment,
+  tracker:    Tracker,
 };
 
 export default function App() {
