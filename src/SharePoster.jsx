@@ -77,6 +77,13 @@ const protocols = [
   { name:"AG-UI", desc:{en:"Agent↔UI",zh:"Agent↔前端"}, color:"#34d399" },
 ];
 
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return { r, g, b };
+}
+
 async function renderPoster(url, lang, title, subtitle) {
   const W = 720, H = 1280;
   const canvas = document.createElement("canvas");
@@ -85,76 +92,131 @@ async function renderPoster(url, lang, title, subtitle) {
   const ctx = canvas.getContext("2d");
   const PAD = 48;
 
-  // Background
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, "#06080d");
+  // ── Rich gradient background ──
+  const bg = ctx.createLinearGradient(0, 0, W * 0.3, H);
+  bg.addColorStop(0, "#050810");
+  bg.addColorStop(0.3, "#0a1020");
   bg.addColorStop(0.6, "#0d1117");
-  bg.addColorStop(1, "#0a0f18");
+  bg.addColorStop(1, "#060a12");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle grid pattern
-  ctx.strokeStyle = "rgba(77,142,255,0.04)";
-  ctx.lineWidth = 1;
-  for (let x = PAD; x < W - PAD; x += 40) {
-    ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 380); ctx.stroke();
-  }
-  for (let y = 60; y < 380; y += 40) {
-    ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
-  }
-
-  // Decorative network constellation (top area)
-  const nodes = [
-    [100, 100], [300, 80], [550, 120], [620, 200],
-    [480, 280], [200, 260], [80, 200], [380, 180],
+  // ── Ambient color blobs for depth ──
+  const blobs = [
+    { x: 120, y: 160, r: 200, color: "77,142,255", alpha: 0.04 },
+    { x: 580, y: 100, r: 160, color: "167,139,250", alpha: 0.03 },
+    { x: 400, y: 700, r: 250, color: "34,211,238", alpha: 0.02 },
+    { x: 600, y: 1100, r: 180, color: "251,191,36", alpha: 0.02 },
   ];
-  const edges = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0],[1,7],[7,4],[7,2],[5,7]];
-  ctx.strokeStyle = "rgba(77,142,255,0.10)";
-  ctx.lineWidth = 1;
-  for (const [a, b] of edges) {
-    ctx.beginPath();
-    ctx.moveTo(nodes[a][0], nodes[a][1]);
-    ctx.lineTo(nodes[b][0], nodes[b][1]);
-    ctx.stroke();
-  }
-  const nodeColors = ["#4d8eff","#a78bfa","#22d3ee","#fb7185","#fbbf24","#34d399","#4d8eff","#a78bfa"];
-  for (let i = 0; i < nodes.length; i++) {
-    // Glow
-    const grd = ctx.createRadialGradient(nodes[i][0], nodes[i][1], 0, nodes[i][0], nodes[i][1], 20);
-    grd.addColorStop(0, nodeColors[i] + "30");
+  for (const blob of blobs) {
+    const grd = ctx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.r);
+    grd.addColorStop(0, `rgba(${blob.color},${blob.alpha})`);
     grd.addColorStop(1, "transparent");
     ctx.fillStyle = grd;
-    ctx.fillRect(nodes[i][0] - 20, nodes[i][1] - 20, 40, 40);
-    // Dot
+    ctx.fillRect(blob.x - blob.r, blob.y - blob.r, blob.r * 2, blob.r * 2);
+  }
+
+  // ── Fine dot grid pattern (top area only) ──
+  ctx.fillStyle = "rgba(77,142,255,0.06)";
+  for (let x = PAD; x < W - PAD; x += 32) {
+    for (let gy = 60; gy < 340; gy += 32) {
+      ctx.beginPath();
+      ctx.arc(x, gy, 0.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ── Network constellation with glow (top area) ──
+  const nodes = [
+    { pos: [90, 90], size: 5 },
+    { pos: [250, 60], size: 4 },
+    { pos: [420, 100], size: 6 },
+    { pos: [580, 80], size: 3 },
+    { pos: [640, 190], size: 5 },
+    { pos: [520, 270], size: 4 },
+    { pos: [300, 240], size: 3 },
+    { pos: [140, 210], size: 4 },
+    { pos: [60, 160], size: 3 },
+    { pos: [380, 170], size: 5 },
+    { pos: [200, 150], size: 3 },
+    { pos: [500, 160], size: 4 },
+  ];
+  const edges = [
+    [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,0],
+    [1,10],[10,9],[9,2],[9,11],[11,5],[6,9],[2,11],[7,10],
+  ];
+  const nodeColors = [
+    "#4d8eff","#a78bfa","#22d3ee","#fb7185","#fbbf24","#34d399",
+    "#4d8eff","#a78bfa","#22d3ee","#fb7185","#fbbf24","#34d399",
+  ];
+
+  // Draw edges with gradient
+  for (const [a, b] of edges) {
+    const grad = ctx.createLinearGradient(
+      nodes[a].pos[0], nodes[a].pos[1],
+      nodes[b].pos[0], nodes[b].pos[1]
+    );
+    grad.addColorStop(0, nodeColors[a] + "18");
+    grad.addColorStop(0.5, nodeColors[a] + "10");
+    grad.addColorStop(1, nodeColors[b] + "18");
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(nodes[i][0], nodes[i][1], 3, 0, Math.PI * 2);
+    ctx.moveTo(nodes[a].pos[0], nodes[a].pos[1]);
+    ctx.lineTo(nodes[b].pos[0], nodes[b].pos[1]);
+    ctx.stroke();
+  }
+
+  // Draw nodes with glow
+  for (let i = 0; i < nodes.length; i++) {
+    const [nx, ny] = nodes[i].pos;
+    const { r, g, b } = hexToRgb(nodeColors[i]);
+    // Outer glow
+    const grd = ctx.createRadialGradient(nx, ny, 0, nx, ny, 28);
+    grd.addColorStop(0, `rgba(${r},${g},${b},0.15)`);
+    grd.addColorStop(0.5, `rgba(${r},${g},${b},0.04)`);
+    grd.addColorStop(1, "transparent");
+    ctx.fillStyle = grd;
+    ctx.fillRect(nx - 28, ny - 28, 56, 56);
+    // Core dot
+    ctx.beginPath();
+    ctx.arc(nx, ny, nodes[i].size, 0, Math.PI * 2);
     ctx.fillStyle = nodeColors[i];
-    ctx.globalAlpha = 0.6;
+    ctx.globalAlpha = 0.7;
+    ctx.fill();
+    // Bright center
+    ctx.beginPath();
+    ctx.arc(nx, ny, nodes[i].size * 0.4, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.globalAlpha = 0.5;
     ctx.fill();
   }
   ctx.globalAlpha = 1;
 
   // ── Title area ──
-  let y = 340;
+  let y = 330;
 
-  // Accent bar
-  const accent = ctx.createLinearGradient(PAD, 0, PAD + 80, 0);
+  // Gradient accent bar
+  const accent = ctx.createLinearGradient(PAD, 0, PAD + 100, 0);
   accent.addColorStop(0, "#4d8eff");
   accent.addColorStop(1, "#a78bfa");
   ctx.fillStyle = accent;
-  roundRect(ctx, PAD, y, 60, 4, 2);
+  roundRect(ctx, PAD, y, 80, 4, 2);
   ctx.fill();
-  y += 28;
+  y += 32;
 
-  // Title
-  ctx.fillStyle = "#e1e7ef";
-  ctx.font = "bold 32px system-ui, -apple-system, sans-serif";
+  // Title with slight shadow
+  ctx.shadowColor = "rgba(77,142,255,0.2)";
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = "#f0f4f8";
+  ctx.font = "bold 36px system-ui, -apple-system, sans-serif";
   ctx.textBaseline = "top";
   const titleLines = wrapText(ctx, title, W - PAD * 2);
   for (const line of titleLines) {
     ctx.fillText(line, PAD, y);
-    y += 42;
+    y += 48;
   }
+  ctx.shadowBlur = 0;
 
   // Subtitle
   ctx.fillStyle = "#8b949e";
@@ -167,127 +229,165 @@ async function renderPoster(url, lang, title, subtitle) {
   }
 
   // ── L0-L5 Automation Spectrum ──
-  y += 28;
-  ctx.fillStyle = "#525e70";
-  ctx.font = "bold 11px monospace";
+  y += 32;
+  ctx.fillStyle = "#6b7685";
+  ctx.font = "bold 12px monospace";
   ctx.fillText(lang === "zh" ? "▎自动化频谱" : "▎AUTOMATION SPECTRUM", PAD, y);
-  y += 24;
+  y += 28;
 
   const barAreaW = W - PAD * 2;
-  const barH = 32;
-  const gap = 8;
+  const barH = 36;
+  const gap = 6;
 
   for (const level of spectrum) {
-    // Background track
-    ctx.fillStyle = "#131a24";
-    roundRect(ctx, PAD, y, barAreaW, barH, 6);
+    // Background track with subtle border
+    ctx.fillStyle = "#0f1520";
+    roundRect(ctx, PAD, y, barAreaW, barH, 8);
     ctx.fill();
+    ctx.strokeStyle = "#1a2030";
+    ctx.lineWidth = 1;
+    roundRect(ctx, PAD, y, barAreaW, barH, 8);
+    ctx.stroke();
 
-    // Filled bar (human effort %)
+    // Gradient filled bar
     const aiPct = 100 - level.pct;
-    const fillW = Math.max(barAreaW * (aiPct / 100), 30);
-    ctx.fillStyle = level.color + "30";
-    roundRect(ctx, PAD, y, fillW, barH, 6);
+    const fillW = Math.max(barAreaW * (aiPct / 100), 36);
+    const { r, g, b } = hexToRgb(level.color);
+    const barGrad = ctx.createLinearGradient(PAD, 0, PAD + fillW, 0);
+    barGrad.addColorStop(0, `rgba(${r},${g},${b},0.25)`);
+    barGrad.addColorStop(1, `rgba(${r},${g},${b},0.08)`);
+    ctx.fillStyle = barGrad;
+    roundRect(ctx, PAD, y, fillW, barH, 8);
     ctx.fill();
 
-    // Left accent
-    ctx.fillStyle = level.color;
+    // Left accent with glow
+    const accentGrad = ctx.createLinearGradient(PAD, y, PAD, y + barH);
+    accentGrad.addColorStop(0, level.color);
+    accentGrad.addColorStop(1, `rgba(${r},${g},${b},0.5)`);
+    ctx.fillStyle = accentGrad;
     roundRect(ctx, PAD, y, 4, barH, 2);
     ctx.fill();
 
-    // Level label
+    // Level badge
+    ctx.fillStyle = level.color + "20";
+    roundRect(ctx, PAD + 12, y + 6, 32, barH - 12, 5);
+    ctx.fill();
     ctx.fillStyle = level.color;
     ctx.font = "bold 13px monospace";
-    ctx.fillText(level.l, PAD + 14, y + 11);
+    ctx.fillText(level.l, PAD + 16, y + 12);
 
     // Name
     ctx.fillStyle = "#e1e7ef";
-    ctx.font = "13px system-ui, -apple-system, sans-serif";
-    ctx.fillText(t(level.name, lang), PAD + 52, y + 11);
+    ctx.font = "14px system-ui, -apple-system, sans-serif";
+    ctx.fillText(t(level.name, lang), PAD + 56, y + 12);
 
-    // AI percentage on right
+    // AI percentage on right with emphasis
     ctx.fillStyle = level.color;
-    ctx.font = "bold 12px monospace";
+    ctx.font = "bold 13px monospace";
     const pctText = `${aiPct}% AI`;
     const pctW = ctx.measureText(pctText).width;
-    ctx.fillText(pctText, PAD + barAreaW - pctW - 12, y + 11);
+    ctx.fillText(pctText, PAD + barAreaW - pctW - 14, y + 12);
 
     y += barH + gap;
   }
 
   // ── Protocol Stack ──
-  y += 16;
-  ctx.fillStyle = "#525e70";
-  ctx.font = "bold 11px monospace";
-  ctx.fillText(lang === "zh" ? "▎协议栈" : "▎PROTOCOL STACK", PAD, y);
   y += 20;
+  ctx.fillStyle = "#6b7685";
+  ctx.font = "bold 12px monospace";
+  ctx.fillText(lang === "zh" ? "▎协议栈" : "▎PROTOCOL STACK", PAD, y);
+  y += 24;
 
   const protoW = (barAreaW - 12 * 3) / 4;
+  const protoH = 64;
   for (let i = 0; i < protocols.length; i++) {
     const px = PAD + i * (protoW + 12);
-    // Card bg
-    ctx.fillStyle = protocols[i].color + "12";
-    roundRect(ctx, px, y, protoW, 56, 8);
+    const { r, g, b } = hexToRgb(protocols[i].color);
+
+    // Card bg with gradient
+    const cardGrad = ctx.createLinearGradient(px, y, px, y + protoH);
+    cardGrad.addColorStop(0, `rgba(${r},${g},${b},0.10)`);
+    cardGrad.addColorStop(1, `rgba(${r},${g},${b},0.03)`);
+    ctx.fillStyle = cardGrad;
+    roundRect(ctx, px, y, protoW, protoH, 10);
     ctx.fill();
+
     // Border
-    ctx.strokeStyle = protocols[i].color + "30";
+    ctx.strokeStyle = `rgba(${r},${g},${b},0.20)`;
     ctx.lineWidth = 1;
-    roundRect(ctx, px, y, protoW, 56, 8);
+    roundRect(ctx, px, y, protoW, protoH, 10);
     ctx.stroke();
+
+    // Top accent line
+    ctx.fillStyle = protocols[i].color;
+    roundRect(ctx, px + 12, y, protoW - 24, 2, 1);
+    ctx.fill();
+
     // Name
     ctx.fillStyle = protocols[i].color;
-    ctx.font = "bold 14px monospace";
+    ctx.font = "bold 15px monospace";
     const nameW = ctx.measureText(protocols[i].name).width;
-    ctx.fillText(protocols[i].name, px + (protoW - nameW) / 2, y + 14);
+    ctx.fillText(protocols[i].name, px + (protoW - nameW) / 2, y + 18);
+
     // Desc
     ctx.fillStyle = "#8b949e";
-    ctx.font = "10px system-ui, -apple-system, sans-serif";
+    ctx.font = "11px system-ui, -apple-system, sans-serif";
     const descText = t(protocols[i].desc, lang);
     const descW = ctx.measureText(descText).width;
-    ctx.fillText(descText, px + (protoW - descW) / 2, y + 36);
+    ctx.fillText(descText, px + (protoW - descW) / 2, y + 40);
   }
-  y += 56;
+  y += protoH;
 
   // ── Insight Quote ──
-  y += 28;
+  y += 32;
   const insight = insights[Math.floor(Math.random() * insights.length)];
   const quoteText = t(insight, lang);
 
-  // Quote background
-  ctx.fillStyle = "#4d8eff08";
-  roundRect(ctx, PAD, y, barAreaW, 0, 10); // measure first
   ctx.font = "italic 15px system-ui, -apple-system, sans-serif";
-  const quoteLines = wrapText(ctx, quoteText, barAreaW - 48);
-  const quoteH = quoteLines.length * 24 + 28;
-  ctx.fillStyle = "#4d8eff0a";
-  roundRect(ctx, PAD, y, barAreaW, quoteH, 10);
+  const quoteLines = wrapText(ctx, quoteText, barAreaW - 56);
+  const quoteH = quoteLines.length * 26 + 32;
+
+  // Quote background with gradient
+  const quoteBg = ctx.createLinearGradient(PAD, y, PAD + barAreaW, y);
+  quoteBg.addColorStop(0, "rgba(77,142,255,0.06)");
+  quoteBg.addColorStop(1, "rgba(167,139,250,0.03)");
+  ctx.fillStyle = quoteBg;
+  roundRect(ctx, PAD, y, barAreaW, quoteH, 12);
   ctx.fill();
 
-  // Quote accent
-  ctx.fillStyle = "#4d8eff40";
+  // Quote left accent gradient
+  const quoteAccent = ctx.createLinearGradient(PAD, y, PAD, y + quoteH);
+  quoteAccent.addColorStop(0, "#4d8eff");
+  quoteAccent.addColorStop(1, "#a78bfa");
+  ctx.fillStyle = quoteAccent;
   roundRect(ctx, PAD, y, 3, quoteH, 2);
   ctx.fill();
 
   // Quote mark
-  ctx.fillStyle = "#4d8eff60";
-  ctx.font = "bold 28px serif";
-  ctx.fillText("\u201C", PAD + 16, y + 12);
+  ctx.fillStyle = "#4d8eff50";
+  ctx.font = "bold 32px serif";
+  ctx.fillText("\u201C", PAD + 18, y + 10);
 
   // Quote text
-  ctx.fillStyle = "#c8d1dc";
+  ctx.fillStyle = "#d0d8e4";
   ctx.font = "italic 15px system-ui, -apple-system, sans-serif";
-  let qy = y + 18;
+  let qy = y + 20;
   for (const line of quoteLines) {
-    ctx.fillText(line, PAD + 24, qy);
-    qy += 24;
+    ctx.fillText(line, PAD + 28, qy);
+    qy += 26;
   }
   y += quoteH;
 
   // ── Bottom: QR + CTA ──
-  const bottomY = H - 200;
+  const bottomY = H - 210;
 
-  // Divider
-  ctx.strokeStyle = "#1b2433";
+  // Decorative divider with gradient
+  const divGrad = ctx.createLinearGradient(PAD, 0, W - PAD, 0);
+  divGrad.addColorStop(0, "transparent");
+  divGrad.addColorStop(0.2, "#1b2433");
+  divGrad.addColorStop(0.8, "#1b2433");
+  divGrad.addColorStop(1, "transparent");
+  ctx.strokeStyle = divGrad;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(PAD, bottomY);
@@ -297,7 +397,7 @@ async function renderPoster(url, lang, title, subtitle) {
   // QR code
   const qrSize = 140;
   const qrX = W - PAD - qrSize;
-  const qrY = bottomY + 24;
+  const qrY = bottomY + 28;
 
   const qrDataUrl = await QRCode.toDataURL(url, {
     width: qrSize * 2,
@@ -306,39 +406,52 @@ async function renderPoster(url, lang, title, subtitle) {
     errorCorrectionLevel: "M",
   });
 
-  // QR white bg
+  // QR white bg with rounded corners and shadow
+  ctx.shadowColor = "rgba(77,142,255,0.15)";
+  ctx.shadowBlur = 20;
   ctx.fillStyle = "#ffffff";
-  roundRect(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 10);
+  roundRect(ctx, qrX - 10, qrY - 10, qrSize + 20, qrSize + 20, 14);
   ctx.fill();
+  ctx.shadowBlur = 0;
 
   const qrImg = await loadImage(qrDataUrl);
   ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
   // CTA text
-  ctx.fillStyle = "#e1e7ef";
-  ctx.font = "bold 20px system-ui, -apple-system, sans-serif";
-  ctx.fillText(lang === "zh" ? "扫码查看完整全景" : "Scan for full landscape", PAD, bottomY + 36);
+  ctx.fillStyle = "#f0f4f8";
+  ctx.font = "bold 22px system-ui, -apple-system, sans-serif";
+  ctx.fillText(lang === "zh" ? "扫码查看完整全景" : "Scan for full landscape", PAD, bottomY + 42);
 
   ctx.fillStyle = "#8b949e";
   ctx.font = "14px system-ui, -apple-system, sans-serif";
   ctx.fillText(
     lang === "zh" ? "微信扫一扫 或 长按识别二维码" : "Scan QR or long-press to recognize",
-    PAD, bottomY + 64
+    PAD, bottomY + 72
   );
 
   // Mini protocol tags at bottom
   ctx.font = "11px monospace";
-  const miniTags = ["MCP","ACP","A2A","AG-UI","A2UI"];
+  const miniTags = [
+    { name: "MCP", color: "#4d8eff" },
+    { name: "ACP", color: "#22d3ee" },
+    { name: "A2A", color: "#a78bfa" },
+    { name: "AG-UI", color: "#34d399" },
+    { name: "A2UI", color: "#fbbf24" },
+  ];
   let mtx = PAD;
-  const mty = bottomY + 100;
+  const mty = bottomY + 104;
   for (const tag of miniTags) {
-    const tw = ctx.measureText(tag).width + 14;
-    ctx.fillStyle = "#4d8eff18";
-    roundRect(ctx, mtx, mty, tw, 22, 4);
+    const tw = ctx.measureText(tag.name).width + 16;
+    ctx.fillStyle = tag.color + "15";
+    roundRect(ctx, mtx, mty, tw, 24, 5);
     ctx.fill();
-    ctx.fillStyle = "#4d8eff";
-    ctx.fillText(tag, mtx + 7, mty + 6);
-    mtx += tw + 6;
+    ctx.strokeStyle = tag.color + "25";
+    ctx.lineWidth = 1;
+    roundRect(ctx, mtx, mty, tw, 24, 5);
+    ctx.stroke();
+    ctx.fillStyle = tag.color;
+    ctx.fillText(tag.name, mtx + 8, mty + 7);
+    mtx += tw + 8;
   }
 
   // Footer
@@ -349,18 +462,38 @@ async function renderPoster(url, lang, title, subtitle) {
     PAD, H - 28
   );
 
+  // ── Subtle border frame ──
+  ctx.strokeStyle = "rgba(77,142,255,0.06)";
+  ctx.lineWidth = 1;
+  roundRect(ctx, 12, 12, W - 24, H - 24, 20);
+  ctx.stroke();
+
   return canvas.toDataURL("image/png");
 }
 
 export default function SharePoster({ lang, mobile, title, subtitle, onClose }) {
   const [posterUrl, setPosterUrl] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
   const overlayRef = useRef(null);
+  const toastTimer = useRef(null);
 
   useEffect(() => {
     const url = window.location.href;
     renderPoster(url, lang, title, subtitle).then(setPosterUrl);
   }, [lang, title, subtitle]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const showToast = useCallback((message, type = "success") => {
+    setToast({ message, type });
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2500);
+  }, []);
 
   const handleSave = useCallback(async () => {
     if (!posterUrl) return;
@@ -370,15 +503,21 @@ export default function SharePoster({ lang, mobile, title, subtitle, onClose }) 
       const file = new File([blob], "ai-agent-landscape.png", { type: "image/png" });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: "AI Agent Landscape" });
+        showToast(t({ en: "Shared successfully!", zh: "分享成功！" }, lang));
       } else {
         const a = document.createElement("a");
         a.href = posterUrl;
         a.download = "ai-agent-landscape.png";
         a.click();
+        showToast(t({ en: "Image saved to downloads!", zh: "图片已保存到下载！" }, lang));
       }
-    } catch {}
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        showToast(t({ en: "Save failed, please long-press image to save", zh: "保存失败，请长按图片保存" }, lang), "error");
+      }
+    }
     setSaving(false);
-  }, [posterUrl]);
+  }, [posterUrl, lang, showToast]);
 
   const handleOverlayClick = (e) => {
     if (e.target === overlayRef.current) onClose();
@@ -390,17 +529,43 @@ export default function SharePoster({ lang, mobile, title, subtitle, onClose }) 
       onClick={handleOverlayClick}
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,0.8)", backdropFilter: "blur(12px)",
+        background: "rgba(0,0,0,0.85)", backdropFilter: "blur(16px)",
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
         padding: 16,
       }}
     >
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position: "fixed", top: 32, left: "50%", transform: "translateX(-50%)",
+          zIndex: 10001,
+          background: toast.type === "error" ? "#dc2626" : "#059669",
+          color: "#fff",
+          padding: "10px 24px",
+          borderRadius: 24,
+          fontFamily: mono, fontSize: 13, fontWeight: 600,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+          animation: "toast-in 0.3s ease",
+          display: "flex", alignItems: "center", gap: 8,
+        }}>
+          <span>{toast.type === "error" ? "✕" : "✓"}</span>
+          {toast.message}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes toast-in {
+          from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
+
       <div style={{
         maxWidth: mobile ? "92vw" : 400,
         maxHeight: "75vh",
         borderRadius: 16, overflow: "hidden",
-        boxShadow: "0 20px 80px rgba(0,0,0,0.7)",
+        boxShadow: "0 24px 80px rgba(0,0,0,0.7), 0 0 40px rgba(77,142,255,0.08)",
         border: `1px solid ${C.border}`,
       }}>
         {posterUrl ? (
@@ -423,12 +588,14 @@ export default function SharePoster({ lang, mobile, title, subtitle, onClose }) 
 
       <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
         <button onClick={handleSave} disabled={!posterUrl || saving} style={{
-          background: C.blue, color: "#fff", border: "none",
-          borderRadius: 24, padding: "10px 24px",
+          background: posterUrl ? "linear-gradient(135deg, #4d8eff, #6366f1)" : C.surface,
+          color: "#fff", border: "none",
+          borderRadius: 24, padding: "10px 28px",
           fontFamily: mono, fontSize: 13, fontWeight: 600,
           cursor: posterUrl ? "pointer" : "default",
           opacity: posterUrl ? 1 : 0.5,
-          transition: "opacity 0.2s ease",
+          transition: "all 0.2s ease",
+          boxShadow: posterUrl ? "0 4px 16px rgba(77,142,255,0.3)" : "none",
         }}>
           {t(
             saving
