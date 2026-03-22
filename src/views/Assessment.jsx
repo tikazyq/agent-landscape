@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { C, mono, sans, useWidth, t, Tag } from "../shared";
+import Guide from "./Guide";
 
 const i18n = {
+  tab_assessment:{en:"Self-Assessment",zh:"自评测试"},
+  tab_guide:{en:"Setup Guide",zh:"配置指南"},
   intro:{
     en:"Answer 8 questions about your daily workflow. Find out where you really are on the L0→L5 spectrum.",
     zh:"回答 8 个关于日常工作流的问题，看看你在 L0→L5 光谱上的真实位置。",
@@ -143,9 +146,7 @@ function ProgressBar({current, total, mobile}) {
   );
 }
 
-export default function Assessment({lang}) {
-  const w = useWidth();
-  const mobile = w < 640;
+function AssessmentQuiz({lang, mobile}) {
   const [answers, setAnswers] = useState({});
 
   const answered = Object.keys(answers).length;
@@ -157,7 +158,7 @@ export default function Assessment({lang}) {
   const reset = () => setAnswers({});
 
   return (
-    <div style={{maxWidth:720,margin:"0 auto"}}>
+    <>
       <div style={{fontSize:mobile?10.5:12,color:C.textSub,textAlign:"center",marginBottom:mobile?14:20,lineHeight:1.6}}>
         {t(i18n.intro,lang)}
       </div>
@@ -309,6 +310,46 @@ export default function Assessment({lang}) {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+export default function Assessment({lang}) {
+  const w = useWidth();
+  const mobile = w < 640;
+  const [subTab, setSubTab] = useState("assessment");
+
+  const subTabs = [
+    {id:"assessment",label:i18n.tab_assessment,icon:"📋"},
+    {id:"guide",label:i18n.tab_guide,icon:"🧭"},
+  ];
+
+  return (
+    <div style={{maxWidth:720,margin:"0 auto"}}>
+      {/* Sub-tab toggle */}
+      <div style={{display:"flex",justifyContent:"center",marginBottom:mobile?14:20}}>
+        <div style={{
+          display:"inline-flex",background:C.surface,
+          border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",
+        }}>
+          {subTabs.map(tb=>(
+            <button key={tb.id} onClick={()=>setSubTab(tb.id)} style={{
+              background:subTab===tb.id?C.blue+"22":"transparent",
+              color:subTab===tb.id?C.blue:C.textDim,
+              border:"none",padding:mobile?"6px 14px":"7px 20px",
+              cursor:"pointer",fontFamily:mono,fontSize:mobile?10:11,
+              fontWeight:subTab===tb.id?700:400,transition:"all 0.15s ease",
+              display:"flex",alignItems:"center",gap:5,
+            }}>
+              <span style={{fontSize:mobile?12:14}}>{tb.icon}</span>
+              {t(tb.label,lang)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {subTab === "assessment" && <AssessmentQuiz lang={lang} mobile={mobile}/>}
+      {subTab === "guide" && <Guide lang={lang}/>}
     </div>
   );
 }
