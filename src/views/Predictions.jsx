@@ -1,5 +1,11 @@
 import { useState } from "react";
 import { C, mono, sans, useWidth, t } from "../shared";
+import Tracker from "./Tracker";
+
+const tabLabels = {
+  predictions:{en:"Predictions",zh:"预测"},
+  tracker:{en:"Tracker",zh:"追踪"},
+};
 
 const i18n = {
   horizon:{en:"PREDICTION HORIZON",zh:"预测时间线"},
@@ -291,9 +297,7 @@ function PredictionCard({p, expanded, onToggle, lang, mobile}) {
   );
 }
 
-export default function Predictions({lang}) {
-  const w = useWidth();
-  const mobile = w < 640;
+function PredictionsList({lang, mobile}) {
   const [filter, setFilter] = useState("all");
   const [expanded, setExpanded] = useState(new Set());
   const toggle = k => setExpanded(p=>{const n=new Set(p);n.has(k)?n.delete(k):n.add(k);return n;});
@@ -302,7 +306,7 @@ export default function Predictions({lang}) {
   const sorted = [...filtered].sort((a,b)=>horizonOrder[a.horizon]-horizonOrder[b.horizon]);
 
   return (
-    <div style={{maxWidth:760,margin:"0 auto"}}>
+    <>
       {/* Dimension filter */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:mobile?4:6,marginBottom:mobile?14:20,flexWrap:"wrap"}}>
         <button onClick={()=>setFilter("all")} style={{
@@ -333,6 +337,46 @@ export default function Predictions({lang}) {
           <PredictionCard key={i} p={p} expanded={expanded.has(i)} onToggle={()=>toggle(i)} lang={lang} mobile={mobile}/>
         ))}
       </div>
+    </>
+  );
+}
+
+export default function Predictions({lang}) {
+  const w = useWidth();
+  const mobile = w < 640;
+  const [subTab, setSubTab] = useState("predictions");
+
+  const subTabs = [
+    {id:"predictions",label:tabLabels.predictions,icon:"🔭"},
+    {id:"tracker",label:tabLabels.tracker,icon:"📡"},
+  ];
+
+  return (
+    <div style={{maxWidth:760,margin:"0 auto"}}>
+      {/* Sub-tab toggle */}
+      <div style={{display:"flex",justifyContent:"center",marginBottom:mobile?14:20}}>
+        <div style={{
+          display:"inline-flex",background:C.surface,
+          border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",
+        }}>
+          {subTabs.map(tb=>(
+            <button key={tb.id} onClick={()=>setSubTab(tb.id)} style={{
+              background:subTab===tb.id?C.amber+"22":"transparent",
+              color:subTab===tb.id?C.amber:C.textDim,
+              border:"none",padding:mobile?"6px 14px":"7px 20px",
+              cursor:"pointer",fontFamily:mono,fontSize:mobile?10:11,
+              fontWeight:subTab===tb.id?700:400,transition:"all 0.15s ease",
+              display:"flex",alignItems:"center",gap:5,
+            }}>
+              <span style={{fontSize:mobile?12:14}}>{tb.icon}</span>
+              {t(tb.label,lang)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {subTab === "predictions" && <PredictionsList lang={lang} mobile={mobile}/>}
+      {subTab === "tracker" && <Tracker lang={lang}/>}
     </div>
   );
 }
